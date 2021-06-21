@@ -5,6 +5,8 @@ import DeletePost from './DeletePost'
 import EditPost from './EditPost'
 import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike } from '../graphql/subscriptions'
 import { createLike } from '../graphql/mutations'
+import CreateCommentPost from './CreateCommentPost'
+import CommentPost from './CommentPost'
 import {Auth} from 'aws-amplify'
 
 
@@ -72,20 +74,20 @@ class DisplayPosts extends Component {
                      }
                 })
 
-            // this.createPostCommentListener = API.graphql(graphqlOperation(onCreateComment))
-            //     .subscribe({
-            //          next: commentData => {
-            //               const createdComment = commentData.value.data.onCreateComment
-            //               let posts = [ ...this.state.posts]
+            this.createPostCommentListener = API.graphql(graphqlOperation(onCreateComment))
+                .subscribe({
+                     next: commentData => {
+                          const createdComment = commentData.value.data.onCreateComment
+                          let posts = [ ...this.state.posts]
 
-            //               for (let post of posts ) {
-            //                    if ( createdComment.post.id === post.id) {
-            //                         post.comments.items.push(createdComment)
-            //                    }
-            //               }
-            //               this.setState({ posts})
-            //          }
-            //     })
+                          for (let post of posts ) {
+                               if ( createdComment.post.id === post.id) {
+                                    post.comments.items.push(createdComment)
+                               }
+                          }
+                          this.setState({ posts})
+                     }
+                })
 
                 // this.createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
                 //     .subscribe({
@@ -109,7 +111,7 @@ class DisplayPosts extends Component {
         this.createPostListener.unsubscribe()
         this.deletePostListener.unsubscribe()
         this.updatePostListener.unsubscribe()
-        // this.createPostCommentListener.unsubscribe()
+        this.createPostCommentListener.unsubscribe()
         // this.createPostLikeListener.unsubscribe()
     }
 
@@ -215,7 +217,6 @@ class DisplayPosts extends Component {
                     <p> { post.postBody }</p>
                     <DeletePost data={post}/>
                     <EditPost {...post} />
-
                     <br />
                    {/*  <span>
                         {post.postOwnerId === loggedInUser &&
@@ -252,14 +253,14 @@ class DisplayPosts extends Component {
                          </span>
                     </span>
  */}
-                  {/*   <span>
+                  <span>
                         <CreateCommentPost postId={post.id} />
                         { post.comments.items.length > 0 && <span style={{fontSize:"19px", color:"gray"}}>
                              Comments: </span>}
                              {
-                                  post.comments.items.map((comment, index) => <CommentPost key={index} commentData={comment}/>)
+                                post.comments.items.map((comment, index) => <CommentPost key={index} commentData={comment}/>)
                              }
-                    </span> */}
+                    </span>
                     
                   </div>
              )
