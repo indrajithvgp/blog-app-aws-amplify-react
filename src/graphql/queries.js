@@ -64,7 +64,7 @@ export const listPosts = /* GraphQL */ `
             id
             numberLikes
             likeOwnerId
-            likeOwnerUsername
+            likeOwnerUsername 
           }
         }
         updatedAt

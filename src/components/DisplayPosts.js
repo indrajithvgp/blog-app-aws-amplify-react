@@ -7,7 +7,9 @@ import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike
 import { createLike } from '../graphql/mutations'
 import CreateCommentPost from './CreateCommentPost'
 import CommentPost from './CommentPost'
+import { FaThumbsUp, FaSadTear } from 'react-icons/fa';
 import {Auth} from 'aws-amplify'
+import UsersWhoLikedPost from './UsersWhoLikedPost'
 
 
 class DisplayPosts extends Component {
@@ -89,21 +91,21 @@ class DisplayPosts extends Component {
                      }
                 })
 
-                // this.createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
-                //     .subscribe({
-                //          next: postData => {
-                //               const createdLike = postData.value.data.onCreateLike
+                this.createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
+                    .subscribe({
+                         next: postData => {
+                              const createdLike = postData.value.data.onCreateLike
 
-                //               let posts = [...this.state.posts]
-                //               for (let post of posts ) {
-                //                    if (createdLike.post.id === post.id) {
-                //                         post.likes.items.push(createdLike)
-                //                    }
-                //               }
-                //               this.setState({ posts })
+                              let posts = [...this.state.posts]
+                              for (let post of posts ) {
+                                   if (createdLike.post.id === post.id) {
+                                        post.likes.items.push(createdLike)
+                                   }
+                              }
+                              this.setState({ posts })
                               
-                //          }
-                //     })
+                         }
+                    })
     }
 
 
@@ -112,85 +114,85 @@ class DisplayPosts extends Component {
         this.deletePostListener.unsubscribe()
         this.updatePostListener.unsubscribe()
         this.createPostCommentListener.unsubscribe()
-        // this.createPostLikeListener.unsubscribe()
+        this.createPostLikeListener.unsubscribe()
     }
 
     getPosts = async () => {
          const result = await API.graphql(graphqlOperation(listPosts))
 
          this.setState({ posts: result.data.listPosts.items})
-          //console.log("All Posts: ", JSON.stringify(result.data.listPosts.items))
-          //console.log("All Posts: ", result.data.listPosts.items)
+          console.log("All Posts: ", JSON.stringify(result.data.listPosts.items))
+          console.log("All Posts: ", result.data.listPosts.items)
     }
 
-    // likedPost = (postId) =>  {
+    likedPost = (postId) =>  {
          
-    //     for (let post of this.state.posts) {
-    //           if ( post.id === postId ) {
-    //                if ( post.postOwnerId === this.state.ownerId) return true;
-    //                 for (let like of post.likes.items) {
-    //                      if (like.likeOwnerId === this.state.ownerId) {
-    //                          return true;
-    //                      }
-    //                 }
-    //           }
-    //     }
-    //     return false;
-    // }
+        for (let post of this.state.posts) {
+              if ( post.id === postId ) {
+                   if ( post.postOwnerId === this.state.ownerId) return true;
+                    for (let like of post.likes.items) {
+                         if (like.likeOwnerId === this.state.ownerId) {
+                             return true;
+                         }
+                    }
+              }
+        }
+        return false;
+    }
 
-    // handleLike = async postId => {
-    //      if (this.likedPost(postId)) {return this.setState({errorMessage: "Can't Like Your Own Post."})} else {
-    //         const input = {
-    //             numberLikes: 1,
-    //             likeOwnerId: this.state.ownerId,
-    //             likeOwnerUsername: this.state.ownerUsername,
-    //             likePostId: postId
-    //        }
+    handleLike = async postId => {
+         if (this.likedPost(postId)) {return this.setState({errorMessage: "Can't Like Your Own Post."})} else {
+            const input = {
+                numberLikes: 1,
+                likeOwnerId: this.state.ownerId,
+                likeOwnerUsername: this.state.ownerUsername,
+                likePostId: postId
+           }
            
-    //        try {
-    //           const result =  await API.graphql(graphqlOperation(createLike, { input }))
+           try {
+              const result =  await API.graphql(graphqlOperation(createLike, { input }))
    
-    //            console.log("Liked: ", result.data);
+               console.log("Liked: ", result.data);
                
-    //        }catch (error) {
-    //             console.error(error)
+           }catch (error) {
+                console.error(error)
                 
-    //        }
-    //      }
+           }
+         }
        
-    // }
+    }
 
-    // handleMouseHover = async postId => {
-    //      this.setState({isHovering: !this.state.isHovering})
+    handleMouseHover = async postId => {
+         this.setState({isHovering: !this.state.isHovering})
 
-    //      let innerLikes = this.state.postLikedBy
+         let innerLikes = this.state.postLikedBy
 
-    //      for (let post of this.state.posts) {
-    //           if (post.id === postId) {
-    //                for ( let like of post.likes.items) {
-    //                      innerLikes.push(like.likeOwnerUsername)
-    //                }
-    //           }
+         for (let post of this.state.posts) {
+              if (post.id === postId) {
+                   for ( let like of post.likes.items) {
+                         innerLikes.push(like.likeOwnerUsername)
+                   }
+              }
 
-    //           this.setState({postLikedBy: innerLikes})
+              this.setState({postLikedBy: innerLikes})
 
 
-    //      }
+         }
 
-    //       console.log("Post liked by: ", this.state.postLikedBy);
+          console.log("Post liked by: ", this.state.postLikedBy);
           
 
      
-    // }
+    }
 
-    // handleMouseHoverLeave = async () => {
-    //         this.setState({isHovering: !this.state.isHovering})
-    //         this.setState({postLikedBy: []})
-
-
+    handleMouseHoverLeave = async () => {
+            this.setState({isHovering: !this.state.isHovering})
+            this.setState({postLikedBy: []})
 
 
-    // }
+
+
+    }
     
     render() {
         const { posts } = this.state
@@ -218,7 +220,7 @@ class DisplayPosts extends Component {
                     <DeletePost data={post}/>
                     <EditPost {...post} />
                     <br />
-                   {/*  <span>
+                   {<span>
                         {post.postOwnerId === loggedInUser &&
                             <DeletePost data={post}/>
                         }
@@ -252,7 +254,7 @@ class DisplayPosts extends Component {
 
                          </span>
                     </span>
- */}
+ }
                   <span>
                         <CreateCommentPost postId={post.id} />
                         { post.comments.items.length > 0 && <span style={{fontSize:"19px", color:"gray"}}>
